@@ -1,0 +1,110 @@
+[
+  {
+    "id": "auto-format-code",
+    "name": "Auto Format Code",
+    "description": "Automatically format TypeScript, JavaScript, and JSON files on save using Prettier",
+    "eventType": "fileEdited",
+    "filePatterns": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.json"],
+    "hookAction": "runCommand",
+    "command": "npx prettier --write \"$FILE_PATH\" && echo \"✅ Formatted: $FILE_PATH\""
+  },
+  {
+    "id": "lint-on-save",
+    "name": "Lint on Save",
+    "description": "Run ESLint on TypeScript and JavaScript files when edited",
+    "eventType": "fileEdited",
+    "filePatterns": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
+    "hookAction": "runCommand",
+    "command": "npx eslint \"$FILE_PATH\" --fix && echo \"✅ Linted: $FILE_PATH\""
+  },
+  {
+    "id": "type-check-on-save",
+    "name": "TypeScript Type Check",
+    "description": "Run TypeScript compiler check when TS files are edited",
+    "eventType": "fileEdited",
+    "filePatterns": ["**/*.ts", "**/*.tsx"],
+    "hookAction": "runCommand",
+    "command": "npx tsc --noEmit --pretty && echo \"✅ Type check passed\""
+  },
+  {
+    "id": "test-related-files",
+    "name": "Test Related Files",
+    "description": "Run tests for files that have been modified",
+    "eventType": "fileEdited",
+    "filePatterns": ["src/**/*.ts", "src/**/*.tsx"],
+    "hookAction": "runCommand",
+    "command": "npm test -- --findRelatedTests \"$FILE_PATH\" --passWithNoTests"
+  },
+  {
+    "id": "security-scan-new-deps",
+    "name": "Security Scan Dependencies",
+    "description": "Run security audit when package.json is modified",
+    "eventType": "fileEdited",
+    "filePatterns": ["package.json", "package-lock.json", "yarn.lock"],
+    "hookAction": "askAgent",
+    "outputPrompt": "Use the security-auditor agent to review the dependency changes in package.json and check for known vulnerabilities. Run 'npm audit' and analyze the results."
+  },
+  {
+    "id": "validate-env-changes",
+    "name": "Validate Environment Changes",
+    "description": "Validate environment configuration changes",
+    "eventType": "fileEdited",
+    "filePatterns": [".env*", "docker-compose.yml", "Dockerfile"],
+    "hookAction": "askAgent",
+    "outputPrompt": "Review the environment configuration changes. Ensure no secrets are hardcoded and all required variables are documented. Check Docker configurations for security best practices."
+  },
+  {
+    "id": "update-docs-on-api-change",
+    "name": "Update API Documentation",
+    "description": "Remind to update documentation when API files change",
+    "eventType": "fileEdited",
+    "filePatterns": ["**/routes/**/*.ts", "**/api/**/*.ts", "**/controllers/**/*.ts"],
+    "hookAction": "askAgent",
+    "outputPrompt": "API files have been modified. Use the documentation-writer agent to update the API documentation, OpenAPI specs, and any related README files to reflect the changes."
+  },
+  {
+    "id": "database-migration-review",
+    "name": "Database Migration Review",
+    "description": "Review database migrations for safety and performance",
+    "eventType": "fileCreated",
+    "filePatterns": ["**/migrations/**/*.sql", "**/migrations/**/*.ts", "**/migrations/**/*.js"],
+    "hookAction": "askAgent",
+    "outputPrompt": "A new database migration has been created. Use the architect agent to review the migration for:\n1. Data safety (no data loss)\n2. Performance impact\n3. Rollback strategy\n4. Index optimization\n5. Breaking changes"
+  },
+  {
+    "id": "config-file-validation",
+    "name": "Configuration File Validation",
+    "description": "Validate configuration files for syntax and completeness",
+    "eventType": "fileEdited",
+    "filePatterns": ["*.json", "*.yaml", "*.yml", "*.toml", "*.ini"],
+    "hookAction": "runCommand",
+    "command": "if [[ \"$FILE_PATH\" == *.json ]]; then jq . \"$FILE_PATH\" > /dev/null && echo \"✅ Valid JSON\"; elif [[ \"$FILE_PATH\" == *.yaml || \"$FILE_PATH\" == *.yml ]]; then python -c \"import yaml; yaml.safe_load(open('$FILE_PATH'))\" && echo \"✅ Valid YAML\"; fi"
+  },
+  {
+    "id": "component-test-reminder",
+    "name": "Component Test Reminder",
+    "description": "Remind to create/update tests when React components are modified",
+    "eventType": "fileEdited",
+    "filePatterns": ["**/components/**/*.tsx", "**/pages/**/*.tsx"],
+    "hookAction": "askAgent",
+    "outputPrompt": "A React component has been modified. Use the test-engineer agent to:\n1. Check if corresponding test file exists\n2. Update tests to cover new functionality\n3. Ensure accessibility testing is included\n4. Add visual regression tests if UI changed"
+  },
+  {
+    "id": "style-consistency-check",
+    "name": "Style Consistency Check",
+    "description": "Check CSS/SCSS files for consistency and best practices",
+    "eventType": "fileEdited",
+    "filePatterns": ["**/*.css", "**/*.scss", "**/*.sass", "**/*.less"],
+    "hookAction": "runCommand",
+    "command": "npx stylelint \"$FILE_PATH\" --fix && echo \"✅ Styles checked and fixed\""
+  },
+  {
+    "id": "readme-update-reminder",
+    "name": "README Update Reminder",
+    "description": "Remind to update README when significant changes are made",
+    "eventType": "fileEdited",
+    "filePatterns": ["package.json", "src/main.ts", "src/index.ts", "src/app.ts"],
+    "hookAction": "askAgent",
+    "outputPrompt": "Core application files have been modified. Consider updating the README.md file to reflect:\n1. New features or changes\n2. Updated installation instructions\n3. Modified API endpoints\n4. Changed configuration requirements"
+  }
+]

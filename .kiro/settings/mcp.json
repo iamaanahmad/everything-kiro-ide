@@ -1,0 +1,154 @@
+{
+  "mcpServers": {
+    "github": {
+      "command": "uvx",
+      "args": ["mcp-server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "YOUR_GITHUB_TOKEN_HERE"
+      },
+      "disabled": false,
+      "autoApprove": ["list_repositories", "get_repository", "search_repositories"]
+    },
+    "postgres": {
+      "command": "uvx",
+      "args": ["mcp-server-postgres"],
+      "env": {
+        "POSTGRES_CONNECTION_STRING": "postgresql://user:password@localhost:5432/dbname"
+      },
+      "disabled": false,
+      "autoApprove": ["list_tables", "describe_table", "query"]
+    },
+    "filesystem": {
+      "command": "uvx",
+      "args": ["mcp-server-filesystem", "--base-directory", "."],
+      "disabled": false,
+      "autoApprove": ["read_file", "list_directory", "search_files"]
+    },
+    "git": {
+      "command": "uvx",
+      "args": ["mcp-server-git"],
+      "disabled": false,
+      "autoApprove": ["git_status", "git_log", "git_diff"]
+    },
+    "docker": {
+      "command": "uvx",
+      "args": ["mcp-server-docker"],
+      "disabled": false,
+      "autoApprove": ["list_containers", "list_images", "container_status"]
+    },
+    "aws": {
+      "command": "uvx",
+      "args": ["mcp-server-aws"],
+      "env": {
+        "AWS_ACCESS_KEY_ID": "YOUR_AWS_ACCESS_KEY",
+        "AWS_SECRET_ACCESS_KEY": "YOUR_AWS_SECRET_KEY",
+        "AWS_DEFAULT_REGION": "us-east-1"
+      },
+      "disabled": true,
+      "autoApprove": ["list_ec2_instances", "list_s3_buckets"]
+    },
+    "slack": {
+      "command": "uvx",
+      "args": ["mcp-server-slack"],
+      "env": {
+        "SLACK_BOT_TOKEN": "YOUR_SLACK_BOT_TOKEN"
+      },
+      "disabled": true,
+      "autoApprove": ["list_channels", "send_message"]
+    },
+    "jira": {
+      "command": "uvx",
+      "args": ["mcp-server-jira"],
+      "env": {
+        "JIRA_URL": "https://your-domain.atlassian.net",
+        "JIRA_USERNAME": "your-email@domain.com",
+        "JIRA_API_TOKEN": "YOUR_JIRA_API_TOKEN"
+      },
+      "disabled": true,
+      "autoApprove": ["search_issues", "get_issue", "list_projects"]
+    },
+    "mongodb": {
+      "command": "uvx",
+      "args": ["mcp-server-mongodb"],
+      "env": {
+        "MONGODB_CONNECTION_STRING": "mongodb://localhost:27017/your-database"
+      },
+      "disabled": true,
+      "autoApprove": ["list_collections", "find_documents"]
+    },
+    "redis": {
+      "command": "uvx",
+      "args": ["mcp-server-redis"],
+      "env": {
+        "REDIS_URL": "redis://localhost:6379"
+      },
+      "disabled": true,
+      "autoApprove": ["get", "keys", "info"]
+    },
+    "kubernetes": {
+      "command": "uvx",
+      "args": ["mcp-server-kubernetes"],
+      "env": {
+        "KUBECONFIG": "~/.kube/config"
+      },
+      "disabled": true,
+      "autoApprove": ["get_pods", "get_services", "get_deployments"]
+    },
+    "datadog": {
+      "command": "uvx",
+      "args": ["mcp-server-datadog"],
+      "env": {
+        "DATADOG_API_KEY": "YOUR_DATADOG_API_KEY",
+        "DATADOG_APP_KEY": "YOUR_DATADOG_APP_KEY"
+      },
+      "disabled": true,
+      "autoApprove": ["get_metrics", "list_dashboards"]
+    },
+    "openai": {
+      "command": "uvx",
+      "args": ["mcp-server-openai"],
+      "env": {
+        "OPENAI_API_KEY": "YOUR_OPENAI_API_KEY"
+      },
+      "disabled": true,
+      "autoApprove": ["generate_text", "create_embedding"]
+    },
+    "anthropic": {
+      "command": "uvx",
+      "args": ["mcp-server-anthropic"],
+      "env": {
+        "ANTHROPIC_API_KEY": "YOUR_ANTHROPIC_API_KEY"
+      },
+      "disabled": true,
+      "autoApprove": ["generate_text"]
+    },
+    "supabase": {
+      "command": "uvx",
+      "args": ["mcp-server-supabase"],
+      "env": {
+        "SUPABASE_URL": "https://your-project.supabase.co",
+        "SUPABASE_ANON_KEY": "YOUR_SUPABASE_ANON_KEY"
+      },
+      "disabled": true,
+      "autoApprove": ["list_tables", "query_table"]
+    },
+    "vercel": {
+      "command": "uvx",
+      "args": ["mcp-server-vercel"],
+      "env": {
+        "VERCEL_TOKEN": "YOUR_VERCEL_TOKEN"
+      },
+      "disabled": true,
+      "autoApprove": ["list_projects", "get_deployments"]
+    },
+    "railway": {
+      "command": "uvx",
+      "args": ["mcp-server-railway"],
+      "env": {
+        "RAILWAY_TOKEN": "YOUR_RAILWAY_TOKEN"
+      },
+      "disabled": true,
+      "autoApprove": ["list_projects", "get_services"]
+    }
+  }
+}
