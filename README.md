@@ -306,6 +306,10 @@ Delegate specialized tasks to sub-agents:
 
 ---
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=iamaanahmad/everything-kiro-ide&type=date&legend=top-left)](https://www.star-history.com/#iamaanahmad/everything-kiro-ide&type=date&legend=top-left)
+
 ## Contributing
 
 This collection thrives on community contributions. Whether you have:
