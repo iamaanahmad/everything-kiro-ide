@@ -519,6 +519,10 @@ This repository is inspired by [everything-claude-code](https://github.com/affaa
 
 ---
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=iamaanahmad/everything-kiro-ide&type=date&legend=top-left)](https://www.star-history.com/#iamaanahmad/everything-kiro-ide&type=date&legend=top-left)
+
 ## Contributing
 
 Contributions are welcome! If you have:
