@@ -1,0 +1,9 @@
+{
+  "name": "development-power",
+  "displayName": "Development Power",
+  "version": "1.0.0",
+  "description": "Comprehensive development workflows including code review, testing, and debugging",
+  "keywords": ["development", "code", "review", "testing", "debugging", "tdd"],
+  "author": "Everything Kiro",
+  "mcpServers": {}
+}
