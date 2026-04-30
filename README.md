@@ -257,7 +257,7 @@ See [powers/README.md](powers/README.md) for complete documentation.
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/everything-kiro.git
+git clone https://github.com/iamaanahmad/everything-kiro.git
 
 # Copy to your workspace
 cp -r everything-kiro/.kiro .kiro
