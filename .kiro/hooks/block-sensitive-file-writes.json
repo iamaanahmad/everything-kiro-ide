@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "block-sensitive-file-writes",
+      "trigger": "PreToolUse",
+      "matcher": "fs_write|str_replace|fs_append",
+      "action": {
+        "type": "command",
+        "command": "pwsh -NoProfile -Command \"$json = [Console]::In.ReadToEnd() | ConvertFrom-Json; $path = $json.tool_input.path; if ($path -match '\\.env$|credentials\\.json$|id_rsa$|\\.pem$') { Write-Error 'Blocked: writing to a secrets-bearing file is not allowed via automated hooks.'; exit 2 } else { exit 0 }\""
+      },
+      "timeout": 10,
+      "enabled": true
+    }
+  ]
+}

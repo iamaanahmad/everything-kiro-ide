@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "style-lint",
+      "trigger": "PostFileSave",
+      "matcher": "\\.(css|scss|sass|less)$",
+      "action": {
+        "type": "command",
+        "command": "npx stylelint \"$FILE_PATH\" --fix"
+      },
+      "timeout": 30,
+      "enabled": true
+    }
+  ]
+}

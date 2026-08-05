@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "postgres": {
+      "command": "uvx",
+      "args": ["mcp-server-postgres"],
+      "env": {
+        "POSTGRES_CONNECTION_STRING": "POSTGRES_CONNECTION_STRING_ENV_VAR"
+      },
+      "disabled": false,
+      "autoApprove": ["list_tables", "describe_table"]
+    }
+  }
+}

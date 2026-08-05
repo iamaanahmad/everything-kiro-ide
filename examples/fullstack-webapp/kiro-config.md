@@ -8,8 +8,8 @@ This example demonstrates a complete Kiro setup for a modern full-stack web appl
 my-webapp/
 ├── .kiro/
 │   ├── settings/
-│   │   ├── mcp.json              # MCP server configurations
-│   │   └── hooks.json            # Project-specific hooks
+│   │   └── mcp.json              # MCP server configurations
+│   ├── hooks/                    # Project-specific hooks (one v1 JSON file per hook)
 │   └── steering/
 │       ├── project-context.md    # Project-specific context
 │       └── api-standards.md      # API design standards
@@ -86,82 +86,128 @@ my-webapp/
 
 ## Project-Specific Hooks
 
-### .kiro/settings/hooks.json
+Real hooks live under `.kiro/hooks/`, one JSON file per hook (or a few grouped together), using the v1 schema — not a single `hooks.json` array of legacy objects. Example files for this project:
+
+### .kiro/hooks/frontend-build-check.json
 ```json
-[
-  {
-    "id": "frontend-build-check",
-    "name": "Frontend Build Check",
-    "description": "Check frontend build when React components change",
-    "eventType": "fileEdited",
-    "filePatterns": ["frontend/src/**/*.tsx", "frontend/src/**/*.ts"],
-    "hookAction": "runCommand",
-    "command": "cd frontend && npm run type-check && npm run lint"
-  },
-  {
-    "id": "backend-test-on-change",
-    "name": "Backend Test on Change",
-    "description": "Run backend tests when API files change",
-    "eventType": "fileEdited",
-    "filePatterns": ["backend/src/**/*.ts"],
-    "hookAction": "runCommand",
-    "command": "cd backend && npm test -- --findRelatedTests \"$FILE_PATH\" --passWithNoTests"
-  },
-  {
-    "id": "database-migration-review",
-    "name": "Database Migration Review",
-    "description": "Review new database migrations",
-    "eventType": "fileCreated",
-    "filePatterns": ["database/migrations/**/*.sql"],
-    "hookAction": "askAgent",
-    "outputPrompt": "A new database migration has been created. Use the architect agent to review it for:\n1. Data safety and rollback strategy\n2. Performance impact on large tables\n3. Index optimization\n4. Breaking changes that might affect the application"
-  },
-  {
-    "id": "api-documentation-update",
-    "name": "API Documentation Update",
-    "description": "Update API docs when routes change",
-    "eventType": "fileEdited",
-    "filePatterns": ["backend/src/routes/**/*.ts", "backend/src/controllers/**/*.ts"],
-    "hookAction": "askAgent",
-    "outputPrompt": "API endpoints have been modified. Use the documentation-writer agent to:\n1. Update the OpenAPI specification\n2. Update API documentation in README\n3. Add example requests/responses\n4. Update Postman collection if it exists"
-  },
-  {
-    "id": "security-review-auth",
-    "name": "Security Review for Auth Changes",
-    "description": "Security review when authentication code changes",
-    "eventType": "fileEdited",
-    "filePatterns": ["backend/src/auth/**/*.ts", "backend/src/middleware/auth.ts"],
-    "hookAction": "askAgent",
-    "outputPrompt": "Authentication code has been modified. Use the security-auditor agent to review:\n1. JWT token handling and validation\n2. Password hashing and storage\n3. Session management\n4. Authorization logic\n5. Potential security vulnerabilities"
-  },
-  {
-    "id": "e2e-test-reminder",
-    "name": "E2E Test Reminder",
-    "description": "Remind to update E2E tests for UI changes",
-    "eventType": "fileEdited",
-    "filePatterns": ["frontend/src/pages/**/*.tsx", "frontend/src/components/**/*.tsx"],
-    "hookAction": "askAgent",
-    "outputPrompt": "UI components have been modified. Use the test-engineer agent to:\n1. Review existing E2E tests for affected user flows\n2. Update test selectors if UI structure changed\n3. Add new E2E tests for new functionality\n4. Ensure accessibility testing is included"
-  },
-  {
-    "id": "docker-config-validation",
-    "name": "Docker Configuration Validation",
-    "description": "Validate Docker configurations when changed",
-    "eventType": "fileEdited",
-    "filePatterns": ["Dockerfile", "docker-compose.yml", ".dockerignore"],
-    "hookAction": "runCommand",
-    "command": "docker-compose config && echo '✅ Docker configuration is valid'"
-  },
-  {
-    "id": "env-security-check",
-    "name": "Environment Security Check",
-    "description": "Check environment files for security issues",
-    "eventType": "fileEdited",
-    "filePatterns": [".env*", "frontend/.env*", "backend/.env*"],
-    "hookAction": "askAgent",
-    "outputPrompt": "Environment configuration has been modified. Check for:\n1. No hardcoded secrets or API keys\n2. All sensitive values use environment variables\n3. Example files (.env.example) are updated\n4. Documentation reflects new environment variables"
-  }
-]
+{
+  "version": "v1",
+  "hooks": [{
+    "name": "frontend-build-check",
+    "trigger": "PostFileSave",
+    "matcher": "frontend/src/.*\\.tsx?$",
+    "action": { "type": "command", "command": "cd frontend && npm run type-check && npm run lint" },
+    "timeout": 60
+  }]
+}
+```
+
+### .kiro/hooks/backend-test-on-change.json
+```json
+{
+  "version": "v1",
+  "hooks": [{
+    "name": "backend-test-on-change",
+    "trigger": "PostFileSave",
+    "matcher": "backend/src/.*\\.ts$",
+    "action": { "type": "command", "command": "cd backend && npm test -- --findRelatedTests \"$FILE_PATH\" --passWithNoTests" },
+    "timeout": 60
+  }]
+}
+```
+
+### .kiro/hooks/database-migration-review.json
+```json
+{
+  "version": "v1",
+  "hooks": [{
+    "name": "database-migration-review",
+    "trigger": "PostFileCreate",
+    "matcher": "database/migrations/.*\\.sql$",
+    "action": {
+      "type": "agent",
+      "prompt": "A new database migration was created. Use the architect agent to review it for data safety and rollback strategy, performance impact on large tables, index optimization, and breaking changes."
+    }
+  }]
+}
+```
+
+### .kiro/hooks/api-documentation-update.json
+```json
+{
+  "version": "v1",
+  "hooks": [{
+    "name": "api-documentation-update",
+    "trigger": "PostFileSave",
+    "matcher": "backend/src/(routes|controllers)/.*\\.ts$",
+    "action": {
+      "type": "agent",
+      "prompt": "API endpoints were modified. Use the documentation-writer agent to update the OpenAPI spec, README API docs, and example requests/responses."
+    }
+  }]
+}
+```
+
+### .kiro/hooks/security-review-auth.json
+```json
+{
+  "version": "v1",
+  "hooks": [{
+    "name": "security-review-auth",
+    "trigger": "PostFileSave",
+    "matcher": "backend/src/(auth|middleware)/.*\\.ts$",
+    "action": {
+      "type": "agent",
+      "prompt": "Authentication code was modified. Use the security-auditor agent to review JWT handling, password hashing, session management, authorization logic, and potential vulnerabilities."
+    }
+  }]
+}
+```
+
+### .kiro/hooks/e2e-test-reminder.json
+```json
+{
+  "version": "v1",
+  "hooks": [{
+    "name": "e2e-test-reminder",
+    "trigger": "PostFileSave",
+    "matcher": "frontend/src/(pages|components)/.*\\.tsx$",
+    "action": {
+      "type": "agent",
+      "prompt": "UI components were modified. Use the test-engineer agent to review affected E2E tests, update selectors if structure changed, and confirm accessibility testing is included."
+    }
+  }]
+}
+```
+
+### .kiro/hooks/docker-config-validation.json
+```json
+{
+  "version": "v1",
+  "hooks": [{
+    "name": "docker-config-validation",
+    "trigger": "PostFileSave",
+    "matcher": "(Dockerfile|docker-compose\\.ya?ml|\\.dockerignore)$",
+    "action": { "type": "command", "command": "docker-compose config" },
+    "timeout": 15
+  }]
+}
+```
+
+### .kiro/hooks/env-security-check.json
+```json
+{
+  "version": "v1",
+  "hooks": [{
+    "name": "env-security-check",
+    "trigger": "PostFileSave",
+    "matcher": "\\.env(\\..*)?$",
+    "action": {
+      "type": "agent",
+      "prompt": "Environment configuration changed. Check for hardcoded secrets, confirm sensitive values use env vars, and confirm .env.example is in sync."
+    }
+  }]
+}
 ```
 
 ## Steering Configuration

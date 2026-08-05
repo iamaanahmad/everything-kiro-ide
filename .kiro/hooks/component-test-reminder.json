@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "component-test-reminder",
+      "trigger": "PostFileSave",
+      "matcher": "(components|pages)/.*\\.tsx$",
+      "action": {
+        "type": "agent",
+        "prompt": "A React component changed. Check whether its test file exists and covers the new behavior, and confirm accessibility attributes (labels, roles, keyboard handling) are still correct."
+      },
+      "enabled": true
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "session-start-context",
+      "trigger": "SessionStart",
+      "action": {
+        "type": "command",
+        "command": "git status --short --branch && git log -1 --oneline"
+      },
+      "timeout": 10,
+      "enabled": true
+    }
+  ]
+}

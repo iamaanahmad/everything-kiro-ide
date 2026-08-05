@@ -1,54 +1,46 @@
 # Everything Kiro
 
-**The complete collection of Kiro configurations from real-world production use.**
+**A collection of Kiro IDE configurations — agents, hooks, steering files, powers, and skills — kept in sync with Kiro's actual current schemas.**
 
-Production-ready agents, skills, hooks, steering files, specs, and MCP integrations evolved from intensive daily development. Unlock the full potential of Kiro IDE with battle-tested patterns.
-
----
-
-## The Guides
-
-This repo is the raw code only. For comprehensive guides, see:
-
-### **[Kiro Documentation](https://docs.kiro.dev)** (if available)
-
-The foundation - what each config type does, how to structure your setup, context window management, and the philosophy behind these configs.
+This repo is inspired by [everything-claude-code](https://github.com/affaan-m/everything-claude-code), adapted for Kiro. Kiro's hooks, specs, and powers systems have all changed shape since IDE 1.0 shipped, so every config here targets the *current* format rather than the early-preview one.
 
 ---
 
 ## What's Inside
 
-This repo is organized for **Kiro IDE** - install components directly or copy manually.
-
 ```
 everything-kiro/
-├── .kiro/                    # Kiro-specific configurations
+├── .kiro/                        # Drop this whole folder into a workspace to use everything at once
 │   ├── settings/
-│   │   └── mcp.json         # MCP server configurations
-│   └── steering/            # Always-active context and guidelines
-│       ├── coding-standards.md
-│       ├── security-rules.md
-│       └── project-patterns.md
+│   │   └── mcp.json              # MCP server configs (workspace-level)
+│   ├── steering/                 # Always-active + conditional + manual context
+│   │   ├── coding-standards.md   # inclusion: always
+│   │   ├── security-rules.md     # inclusion: always
+│   │   ├── project-patterns.md   # inclusion: always
+│   │   ├── api-conventions.md    # inclusion: fileMatch (loads only for routes/controllers/api files)
+│   │   └── release-checklist.md  # inclusion: manual (loads via /release-checklist)
+│   └── hooks/                    # v1 JSON hooks, PascalCase triggers
+│       └── *.json                # 12 hooks — see hooks/README.md for the list
 │
-├── agents/                  # Specialized sub-agents for delegation
-│   ├── architect.md         # System design and planning
-│   ├── code-reviewer.md     # Quality and security review
-│   ├── test-engineer.md     # TDD and testing workflows
-│   ├── devops-specialist.md # Deployment and infrastructure
-│   ├── debug-detective.md   # Bug investigation and fixing
+├── agents/                       # 8 specialized sub-agents
+│   ├── architect.md
+│   ├── code-reviewer.md
+│   ├── test-engineer.md
+│   ├── devops-specialist.md
+│   ├── debug-detective.md
 │   ├── performance-optimizer.md
 │   ├── security-auditor.md
 │   └── documentation-writer.md
 │
-├── powers/                  # Kiro Powers (packaged capabilities)
-│   ├── README.md            # Powers documentation
-│   ├── development-power/   # Development workflows power
-│   ├── devops-power/        # DevOps and deployment power
-│   └── database-power/      # Database management power
+├── powers/                       # Kiro Powers (POWER.md + optional mcp.json + optional steering/)
+│   ├── README.md                 # Real Powers schema reference
+│   ├── development-power/        # Knowledge Base Power: code review, TDD, debugging, QA
+│   ├── devops-power/             # Knowledge Base Power: deploy checklist, Docker, CI/CD
+│   └── database-power/           # Guided MCP Power: Postgres inspection via MCP
 │
-├── skills/                  # Reusable workflow patterns
+├── skills/                       # Workflow documentation, invoked by agents or read directly
 │   ├── development-workflows/
-│   │   ├── spec-driven-development.md
+│   │   ├── spec-driven-development.md   # Real .kiro/specs/ format, EARS acceptance criteria
 │   │   └── tdd-cycle.md
 │   ├── language-patterns/
 │   │   ├── typescript-best-practices.md
@@ -59,519 +51,134 @@ everything-kiro/
 │       ├── ci-cd-patterns.md
 │       └── monitoring-setup.md
 │
-├── hooks/                   # Event-driven automations
-│   └── file-watchers.json   # File change automation
+├── hooks/
+│   └── README.md                 # Hook schema reference — the runnable hooks live in .kiro/hooks/
 │
-├── specs/                   # Spec-driven development templates
-│   ├── feature-template.md
-│   ├── api-endpoint-template.md
-│   └── refactor-template.md
+├── examples/
+│   ├── example-spec/             # A real, complete .kiro/specs/password-reset/ example
+│   └── fullstack-webapp/         # Example project-level Kiro config (MCP, hooks, steering)
 │
-└── examples/               # Example projects and configurations
-    └── fullstack-webapp/   # Complete web application setup
+├── INSTALL.md
+├── CONTRIBUTING.md
+├── CHANGELOG.md
+└── STATUS.md
 ```
 
 ---
 
-## Key Concepts
+## Key Concepts (as they actually work today)
 
-### Agents
+### Steering files
 
-Subagents handle delegated tasks with limited scope. Kiro can invoke agents proactively based on context.
+Markdown files in `.kiro/steering/` (workspace) or `~/.kiro/steering/` (user), loaded based on frontmatter:
 
-**Example:**
 ```markdown
 ---
-name: code-reviewer
-description: Reviews code for quality, security, and maintainability
-tools: Read, Grep, Glob, Bash
+inclusion: always        # default — every conversation
+# inclusion: fileMatch
+# fileMatchPattern: "**/*.api.ts"
+# inclusion: manual      # loaded via slash command or #reference, not automatically
 ---
-
-You are a senior code reviewer...
 ```
 
-**Available Agents:**
-- **architect** - System design and architecture decisions
-- **code-reviewer** - Quality and security review
-- **test-engineer** - TDD and testing workflows
-- **devops-specialist** - Deployment and infrastructure
-- **debug-detective** - Bug investigation and fixing
-- **performance-optimizer** - Performance analysis and optimization
-- **security-auditor** - Security vulnerability detection
-- **documentation-writer** - Documentation generation and updates
-
-### Steering Files
-
-Steering files provide always-active context to guide Kiro's behavior. They're automatically loaded from `.kiro/steering/`.
-
-**Example:**
-```markdown
-# Coding Standards
-
-## Naming Conventions
-- Use camelCase for variables
-- Use PascalCase for classes
-- Use UPPER_SNAKE_CASE for constants
-
-## File Organization
-- Maximum file size: 800 lines
-- One component per file
-- Group related files by feature
-```
-
-**Inclusion Types:**
-- **Always included** (default) - Active in all conversations
-- **Conditional** - Included when specific files are read
-- **Manual** - User provides via context key (#)
+`manual` steering files show up as slash commands (`/filename`) — this replaced the old "manual hook trigger" concept entirely. If you're coming from a pre-1.0 setup that used manual hooks for on-demand routines, that functionality now belongs in steering, not hooks.
 
 ### Hooks
 
-Hooks fire on IDE events and can trigger agent actions or commands.
+Hooks are versioned JSON files at `.kiro/hooks/*.json` (workspace) or `~/.kiro/hooks/*.json` (user, applies to every workspace):
 
-**Event Types:**
-- `fileEdited` - When a file is saved
-- `fileCreated` - When a new file is created
-- `fileDeleted` - When a file is deleted
-- `userTriggered` - Manual trigger by user
-- `promptSubmit` - When a message is sent
-- `agentStop` - When agent execution completes
-- `preToolUse` - Before a tool is executed
-- `postToolUse` - After a tool is executed
-- `preTaskExecution` - Before a spec task starts
-- `postTaskExecution` - After a spec task completes
-
-**Hook Actions:**
-- `askAgent` - Send a message to the agent
-- `runCommand` - Execute a shell command
-
-**Example:**
 ```json
 {
-  "name": "Lint on Save",
-  "eventType": "fileEdited",
-  "filePatterns": ["*.ts", "*.tsx"],
-  "hookAction": "runCommand",
-  "command": "npm run lint"
+  "version": "v1",
+  "hooks": [{
+    "name": "lint-on-save",
+    "trigger": "PostFileSave",
+    "matcher": "\\.ts$",
+    "action": { "type": "command", "command": "npm run lint" },
+    "timeout": 30
+  }]
 }
 ```
+
+Triggers: `SessionStart`, `Stop`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `PreTaskExec`, `PostTaskExec`, `PostFileCreate`, `PostFileSave`, `PostFileDelete`. `PreToolUse`, `UserPromptSubmit`, and `PreTaskExec` can **block** — a command action exiting with code 2 stops the operation and returns stderr to the agent. See [`hooks/README.md`](hooks/README.md) for the full reference and every hook included here.
+
+If you have hooks from before IDE 1.0 (the `.hook` file format with `eventType`/`hookAction`), they won't run until migrated — open the Agent Hooks panel and convert them via the upgrade badge.
 
 ### Specs
 
-Specs are a structured way of building and documenting features. A spec formalizes the design and implementation process.
+Kiro's structured feature workflow: three gated files under `.kiro/specs/{feature_name}/`.
 
-**Spec Workflow:**
-1. **Requirements** - Define what needs to be built
-2. **Design** - Plan the implementation approach
-3. **Tasks** - Break down into actionable tasks
-4. **Implementation** - Agent works through tasks
-5. **Verification** - Test and validate
+1. **requirements.md** — EARS-format acceptance criteria (`WHEN [event] THEN [system] SHALL [response]`), approved before moving on
+2. **design.md** — architecture, interfaces, data models, addressing every requirement
+3. **tasks.md** — a checkbox list of coding-only tasks, each tagged with the requirement(s) it satisfies
 
-**Spec Features:**
-- Incremental development of complex features
-- Control and feedback at each step
-- File references via `#[[file:path/to/file]]`
-- Task status tracking (pending, in_progress, completed)
-
-### Skills
-
-Skills are workflow definitions that can be invoked by commands or agents.
-
-**Example:**
-```markdown
-# TDD Workflow
-
-1. Define interfaces first
-2. Write failing tests (RED)
-3. Implement minimal code (GREEN)
-4. Refactor (IMPROVE)
-5. Verify 80%+ coverage
-```
-
-### MCP (Model Context Protocol)
-
-MCP servers provide external integrations (GitHub, databases, APIs).
-
-**Example Configuration:**
-```json
-{
-  "mcpServers": {
-    "github": {
-      "command": "uvx",
-      "args": ["mcp-server-github"],
-      "env": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "your_token_here"
-      }
-    }
-  }
-}
-```
-
-**Important:** Keep under 10 MCPs enabled to preserve context window.
+Each phase requires explicit user approval before the next begins. See [`skills/development-workflows/spec-driven-development.md`](skills/development-workflows/spec-driven-development.md) for the full format and [`examples/example-spec/`](examples/example-spec/) for a complete worked example. **Quick Spec** mode generates all three in one pass for smaller features, skipping the per-phase approval gates.
 
 ### Powers
 
-**NEW:** Powers package documentation, workflow guides, and MCP servers into reusable units.
+Powers package documentation (and optionally an MCP server) into something Kiro activates on demand, so you don't pay the context cost of every possible tool up front:
 
-**What are Powers:**
-- Package capabilities for easy distribution
-- Include documentation (POWER.md)
-- Optional steering files for workflows
-- Optional MCP server configurations
-- Shareable and reusable across projects
+- **Knowledge Base Power** — `POWER.md` only, no MCP server (`development-power`, `devops-power` here)
+- **Guided MCP Power** — `POWER.md` + `mcp.json` (`database-power` here)
 
-**Power Actions:**
-- `list` - See all installed powers
-- `activate` - Load power documentation and tools
-- `use` - Execute power tools
-- `readSteering` - Get detailed workflow guides
-- `configure` - Open powers management panel
+There's no `power.json` — all metadata lives in `POWER.md`'s YAML frontmatter. See [`powers/README.md`](powers/README.md) for the schema and [github.com/kirodotdev/powers](https://github.com/kirodotdev/powers) for the official, much larger catalog (AWS, Stripe, Terraform, Zapier, and more) — install those through the Powers panel rather than reimplementing them here.
 
-**Example:**
-```
-User: Activate development power
+### Agents
 
-Kiro: [Loads development-power]
-Available workflows:
-- Code review process
-- TDD methodology
-- Debugging strategies
-- Quality assurance
+Sub-agents with a scoped persona, defined in `agents/*.md` with minimal frontmatter:
 
-User: Read the code review guide
-
-Kiro: [Shows code-review-process.md]
+```markdown
+---
+name: code-reviewer
+description: Expert code reviewer specializing in security, performance, maintainability...
+---
 ```
 
-**Available Powers in this repo:**
-- **development-power** - Development workflows (code review, TDD, debugging)
-- **devops-power** - DevOps and deployment workflows
-- **database-power** - Database management and queries
+Kiro can invoke these proactively based on context, or you can ask for one by name.
 
-See [powers/README.md](powers/README.md) for complete documentation.
+### MCP
+
+External tool servers configured in `.kiro/settings/mcp.json` (workspace) or `~/.kiro/settings/mcp.json` (user, used as fallback if no workspace config exists). Keep enabled servers to what a project actually needs — every enabled MCP server's tools count against context budget.
+
+### Kiro Crew
+
+[Kiro Crew](https://kiro.dev/blog/introducing-kiro-crew/) runs on Kiro CLI and reads existing `.kiro` configuration. After installation, this repository's steering, hooks, skills, and custom-agent patterns can therefore be used by Crew without a separate migration.
+
+This is compatibility documentation only: Everything Kiro intentionally does **not** ship a Crew manifest, schedules, Apps, integrations, or autonomous orchestration workflows. Configure those in Kiro Crew when and if your project needs them.
 
 ---
 
 ## Installation
 
-### Option 1: Copy to Workspace
+See [INSTALL.md](INSTALL.md) for the full walkthrough. Short version:
 
 ```bash
-# Clone the repository
 git clone https://github.com/iamaanahmad/everything-kiro.git
-
-# Copy to your workspace
-cp -r everything-kiro/.kiro .kiro
-cp -r everything-kiro/agents agents
-cp -r everything-kiro/skills skills
-cp -r everything-kiro/hooks hooks
+cp -r everything-kiro/.kiro your-project/.kiro
+cp -r everything-kiro/agents your-project/.kiro/agents
 ```
 
-### Option 2: User-Level Installation
-
-```bash
-# Copy to user-level Kiro directory
-cp -r everything-kiro/.kiro ~/.kiro
-cp -r everything-kiro/agents ~/.kiro/agents
-cp -r everything-kiro/skills ~/.kiro/skills
-```
-
-### Configure MCP Servers
-
-Edit `.kiro/settings/mcp.json` and replace placeholders with your actual API keys:
-
-```json
-{
-  "mcpServers": {
-    "github": {
-      "command": "uvx",
-      "args": ["mcp-server-github"],
-      "env": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "YOUR_TOKEN_HERE"
-      }
-    }
-  }
-}
-```
-
-**Important:** Never commit files with real API keys!
+Then edit `.kiro/settings/mcp.json` and replace the placeholder tokens with real credentials — never commit real secrets.
 
 ---
-
-## Usage Examples
-
-### Using Agents
-
-```
-User: Review this code for security issues
-
-Kiro: [Invokes security-auditor agent]
-
-Security Auditor:
-# Security Review Report
-
-## Critical Issues
-- [CRITICAL] Hardcoded API key in config.ts:42
-- [HIGH] SQL injection vulnerability in user-service.ts:156
-
-## Recommendations
-...
-```
-
-### Using Hooks
-
-```json
-{
-  "name": "TDD Enforcer",
-  "eventType": "fileEdited",
-  "filePatterns": ["src/**/*.ts"],
-  "hookAction": "askAgent",
-  "outputPrompt": "Ensure this file has corresponding tests with 80%+ coverage"
-}
-```
-
-### Using Specs
-
-```
-User: Create a spec for user authentication feature
-
-Kiro: [Creates spec with requirements, design, and tasks]
-
-Spec: User Authentication
-├── Requirements
-│   ├── Email/password login
-│   ├── JWT token generation
-│   └── Password reset flow
-├── Design
-│   ├── Database schema
-│   ├── API endpoints
-│   └── Security considerations
-└── Tasks
-    ├── [ ] Create user model
-    ├── [ ] Implement login endpoint
-    ├── [ ] Add JWT middleware
-    └── [ ] Write tests
-```
-
-### Using Steering Files
-
-Steering files are automatically active. They guide Kiro's behavior without explicit invocation.
-
-```markdown
-# .kiro/steering/security-rules.md
-
-## Security Requirements
-
-- Never hardcode secrets
-- Always validate user input
-- Use parameterized queries
-- Implement rate limiting
-```
-
----
-
-## Key Features
-
-### 🤖 Intelligent Agents (8 total)
-
-Specialized agents for different aspects of development:
-- System architecture and design
-- Code quality and security review
-- Test-driven development
-- DevOps and deployment
-- Debugging and troubleshooting
-- Performance optimization
-- Security auditing
-- Documentation generation
-
-### ⚡ Smart Hooks
-
-Event-driven automation:
-- Auto-format code on save
-- Run tests on file changes
-- Security scans on dependency updates
-- Documentation updates on API changes
-- Database migration reviews
-
-### 📋 Spec-Driven Development
-
-Structured feature development:
-- Requirements documentation
-- Design planning
-- Task breakdown
-- Implementation tracking
-- Verification steps
-
-### 🎯 Steering Rules
-
-Always-active context:
-- Coding standards
-- Security requirements
-- Project patterns
-- Team conventions
-
-### 🔌 MCP Integrations
-
-External service connections:
-- GitHub (PRs, issues, repos)
-- Databases (PostgreSQL, MongoDB, Redis)
-- Cloud services (AWS, GCP, Azure)
-- Development tools (Jira, Slack, etc.)
-
-### ⚡ Powers (NEW!)
-
-Packaged capabilities for easy distribution:
-- **development-power** - Code review, TDD, debugging workflows
-- **devops-power** - Deployment and CI/CD workflows
-- **database-power** - Database management and queries
-
-Powers combine documentation, steering files, and MCP servers into shareable units.
-
----
-
-## Configuration Examples
-
-### TDD Workflow Hook
-
-```json
-{
-  "name": "TDD Enforcer",
-  "eventType": "fileEdited",
-  "filePatterns": ["src/**/*.ts"],
-  "hookAction": "askAgent",
-  "outputPrompt": "Use the test-engineer agent to ensure this file has corresponding tests with 80%+ coverage. If tests don't exist, create them following TDD principles."
-}
-```
-
-### Security Review Hook
-
-```json
-{
-  "name": "Security Audit on Tool Use",
-  "eventType": "preToolUse",
-  "toolTypes": ["write"],
-  "hookAction": "askAgent",
-  "outputPrompt": "Before writing code that handles authentication or sensitive data, verify it follows security best practices."
-}
-```
-
-### Spec Task Completion Hook
-
-```json
-{
-  "name": "Run Tests After Task",
-  "eventType": "postTaskExecution",
-  "hookAction": "runCommand",
-  "command": "npm test"
-}
-```
-
----
-
-## Best Practices
-
-### Context Management
-- Keep steering rules focused and actionable
-- Use specific file patterns in hooks to avoid noise
-- Regularly review and update agent prompts
-- Monitor context window usage (keep under 80%)
-
-### Agent Delegation
-- Use architect agent for high-level design decisions
-- Delegate code reviews to code-reviewer agent before merging
-- Let test-engineer agent handle all testing-related tasks
-- Use debug-detective for complex bug investigations
-
-### MCP Integration
-- Start with essential services (database, git, cloud)
-- Keep under 10 MCPs enabled per project
-- Use environment variables for all sensitive configuration
-- Disable unused MCPs to preserve context window
-
-### Hook Automation
-- Begin with simple file watchers for formatting and linting
-- Add git hooks for commit message validation
-- Implement deployment hooks only after thorough testing
-- Use preToolUse hooks for access control and validation
-
-### Spec-Driven Development
-- Create specs for complex features (> 3 files affected)
-- Break down into small, verifiable tasks
-- Use file references to include relevant documentation
-- Review and update specs as requirements evolve
-
----
-
-## Comparison with Claude Code
-
-This repository is inspired by [everything-claude-code](https://github.com/affaan-m/everything-claude-code) but adapted specifically for Kiro IDE.
-
-**Key Differences:**
-- Kiro-specific features (specs, hooks, steering)
-- Kiro IDE workflow patterns
-- Context management for Kiro
-- MCP configuration for Kiro
-
-**Shared Concepts:**
-- Agent-based delegation
-- Skills for domain knowledge
-- Rules for always-follow guidelines
-- MCP server integrations
-
----
-
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=iamaanahmad/everything-kiro-ide&type=date&legend=top-left)](https://www.star-history.com/#iamaanahmad/everything-kiro-ide&type=date&legend=top-left)
 
 ## Contributing
 
-Contributions are welcome! If you have:
-- New agent specializations
-- Improved workflow patterns
-- Additional MCP integrations
-- Better hook configurations
-- Spec templates
-
-Please submit a pull request. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
----
-
-## Roadmap
-
-### Phase 1: Core Foundation ✅
-- Essential agent collection
-- Basic MCP integrations
-- Fundamental hooks and steering rules
-- Spec templates
-
-### Phase 2: Advanced Workflows 🚧
-- Multi-agent collaboration patterns
-- Complex deployment pipelines
-- Advanced monitoring and alerting
-- Spec-driven development workflows
-
-### Phase 3: AI-Enhanced Development 🔮
-- Predictive code suggestions
-- Automated refactoring agents
-- Intelligent test generation
-- Performance optimization automation
+See [CONTRIBUTING.md](CONTRIBUTING.md). Short version: match the real schema (check kiro.dev/docs if unsure), keep claims in README/STATUS/CHANGELOG in sync with what's actually on disk, and don't add a component without also updating the file tree above.
 
 ---
 
 ## Resources
 
-- **Kiro IDE:** [Official Website](https://kiro.dev)
-- **MCP Protocol:** https://modelcontextprotocol.io
-- **Inspired by:** [everything-claude-code](https://github.com/affaan-m/everything-claude-code)
+- [Kiro IDE](https://kiro.dev)
+- [Kiro Docs](https://kiro.dev/docs)
+- [Kiro Changelog](https://kiro.dev/changelog/) — hooks, specs, and powers have all changed shape at least once; check here before assuming a schema is current
+- [Official Powers registry](https://github.com/kirodotdev/powers)
+- [Model Context Protocol](https://modelcontextprotocol.io)
+- Inspired by [everything-claude-code](https://github.com/affaan-m/everything-claude-code)
 
 ---
 
 ## License
 
-MIT - Use freely, modify as needed, contribute back if you can.
-
----
-
-**Transform your development workflow with AI-powered automation. Start with everything-kiro and build something extraordinary.**
-
-Star this repo if it helps. Customize for your needs. Build something great.
+MIT — use freely, modify as needed, contribute back if you can.

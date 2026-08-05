@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "type-check",
+      "trigger": "PostFileSave",
+      "matcher": "\\.(ts|tsx)$",
+      "action": {
+        "type": "command",
+        "command": "npx tsc --noEmit --pretty"
+      },
+      "timeout": 60,
+      "enabled": true
+    }
+  ]
+}

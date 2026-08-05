@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "post-task-tests",
+      "trigger": "PostTaskExec",
+      "action": {
+        "type": "command",
+        "command": "npm test"
+      },
+      "timeout": 120,
+      "enabled": true
+    }
+  ]
+}

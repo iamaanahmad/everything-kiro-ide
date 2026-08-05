@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "test-related-files",
+      "trigger": "PostFileSave",
+      "matcher": "src/.*\\.(ts|tsx)$",
+      "action": {
+        "type": "command",
+        "command": "npm test -- --findRelatedTests \"$FILE_PATH\" --passWithNoTests"
+      },
+      "timeout": 60,
+      "enabled": true
+    }
+  ]
+}

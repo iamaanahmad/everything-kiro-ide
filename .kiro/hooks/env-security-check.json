@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "env-security-check",
+      "trigger": "PostFileSave",
+      "matcher": "\\.env(\\..*)?$|docker-compose\\.ya?ml$|Dockerfile$",
+      "action": {
+        "type": "agent",
+        "prompt": "Environment or container configuration changed. Verify no secrets are hardcoded, that .env.example stays in sync with new variables, and that Docker configuration follows security best practices (no root user, no baked-in credentials)."
+      },
+      "enabled": true
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "migration-review",
+      "trigger": "PostFileCreate",
+      "matcher": "migrations/.*\\.(sql|ts|js)$",
+      "action": {
+        "type": "agent",
+        "prompt": "A new database migration was created. Review it for: data safety (no destructive changes without a backup path), rollback strategy, index impact on large tables, and breaking changes for existing queries."
+      },
+      "enabled": true
+    }
+  ]
+}

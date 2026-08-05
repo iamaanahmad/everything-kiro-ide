@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "lint-and-format",
+      "trigger": "PostFileSave",
+      "matcher": "\\.(ts|tsx|js|jsx|json)$",
+      "action": {
+        "type": "command",
+        "command": "npx prettier --write \"$FILE_PATH\" && npx eslint \"$FILE_PATH\" --fix"
+      },
+      "timeout": 30,
+      "enabled": true
+    }
+  ]
+}

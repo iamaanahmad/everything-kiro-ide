@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "api-docs-reminder",
+      "trigger": "PostFileSave",
+      "matcher": "(routes|api|controllers)/.*\\.ts$",
+      "action": {
+        "type": "agent",
+        "prompt": "An API route or controller file was modified. Check whether the OpenAPI spec, README, or endpoint documentation needs updating to match the change."
+      },
+      "enabled": true
+    }
+  ]
+}

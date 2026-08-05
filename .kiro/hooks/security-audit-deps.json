@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "security-audit-deps",
+      "trigger": "PostFileSave",
+      "matcher": "package(-lock)?\\.json$|yarn\\.lock$",
+      "action": {
+        "type": "agent",
+        "prompt": "The dependency manifest changed. Run 'npm audit' and review the diff for new or updated packages. Flag any known vulnerabilities, unpinned version ranges, or unfamiliar/typosquatting-risk package names before continuing."
+      },
+      "enabled": true
+    }
+  ]
+}
