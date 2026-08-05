@@ -2,8 +2,6 @@
 
 **A collection of Kiro IDE configurations — agents, hooks, steering files, powers, and skills — kept in sync with Kiro's actual current schemas.**
 
-This repo is inspired by [everything-claude-code](https://github.com/affaan-m/everything-claude-code), adapted for Kiro. Kiro's hooks, specs, and powers systems have all changed shape since IDE 1.0 shipped, so every config here targets the *current* format rather than the early-preview one.
-
 ---
 
 ## What's Inside
