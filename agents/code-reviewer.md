@@ -1,6 +1,8 @@
 ---
 name: code-reviewer
 description: Expert code reviewer specializing in security, performance, maintainability, and best practices. Provides comprehensive code analysis and actionable feedback.
+tools: [read, web]
+welcomeMessage: "Share the code or file path you'd like reviewed and I'll give you thorough, actionable feedback."
 ---
 
 # Code Reviewer Agent

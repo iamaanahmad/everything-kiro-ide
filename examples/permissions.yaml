@@ -1,0 +1,98 @@
+# permissions.yaml — example for workspace-scoped agent permissions
+#
+# Place this file at:
+#   .kiro/settings/permissions.yaml        (workspace scope — specific to one project)
+#   ~/.kiro/settings/permissions.yaml      (user scope — applies to every workspace)
+#
+# Evaluated against every file read, shell command, and MCP call the agent makes.
+# Priority: deny > ask > allow — a deny rule always wins regardless of scope.
+# Workspace permissions are stored per-user outside the repo so a cloned repo
+# cannot inject rules — trust is configured on your own machine.
+#
+# Docs: https://kiro.dev/docs/permissions/
+
+rules:
+  # ---------------------------------------------------------------
+  # DENY — floor rules; nothing overrides these
+  # ---------------------------------------------------------------
+
+  # Never let the agent write secret/key files
+  - capability: fs_write
+    match:
+      - "**/.env"
+      - "**/.env.*"
+      - "**/*.pem"
+      - "**/*.key"
+      - "**/*.p12"
+      - "**/*.pfx"
+    effect: deny
+
+  # Block destructive shell commands
+  - capability: shell
+    match:
+      - "rm -rf *"
+      - "sudo *"
+      - "chmod 777 *"
+      - "curl * | sh"
+      - "wget * | sh"
+    effect: deny
+
+  # ---------------------------------------------------------------
+  # ALLOW — pre-approve common safe operations so the agent doesn't
+  # prompt for every routine action
+  # ---------------------------------------------------------------
+
+  # Read all files freely
+  - capability: fs_read
+    effect: allow
+
+  # Write inside typical source and config directories
+  - capability: fs_write
+    match:
+      - "src/**"
+      - "tests/**"
+      - "scripts/**"
+      - ".kiro/steering/**"
+      - ".kiro/hooks/**"
+      - "*.md"
+      - "*.json"
+      - "*.yaml"
+      - "*.yml"
+      - "*.toml"
+    effect: allow
+
+  # Allow common dev tooling without prompting
+  - capability: shell
+    match:
+      - "git *"
+      - "npm *"
+      - "npx *"
+      - "yarn *"
+      - "pnpm *"
+      - "node *"
+      - "python *"
+      - "pip *"
+      - "uv *"
+    effect: allow
+
+  # Web access — allow searches and public doc fetches
+  - capability: web_search
+    effect: allow
+
+  - capability: web_fetch
+    effect: allow
+
+  # MCP — allow all tools on configured servers; refine per-server below if needed
+  - capability: mcp
+    effect: allow
+
+  # Example: allow everything from one MCP server except a specific dangerous tool
+  # - capability: mcp
+  #   match: ["my-db-server/*"]
+  #   exclude: ["my-db-server/drop-table"]
+  #   effect: allow
+
+  # ---------------------------------------------------------------
+  # ASK — prompt for anything not explicitly covered above
+  # (the Kiro default for shell commands not matched above)
+  # ---------------------------------------------------------------

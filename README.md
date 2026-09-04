@@ -20,15 +20,15 @@ everything-kiro/
 │   └── hooks/                    # v1 JSON hooks, PascalCase triggers
 │       └── *.json                # 12 hooks — see hooks/README.md for the list
 │
-├── agents/                       # 8 specialized sub-agents
-│   ├── architect.md
-│   ├── code-reviewer.md
-│   ├── test-engineer.md
-│   ├── devops-specialist.md
-│   ├── debug-detective.md
-│   ├── performance-optimizer.md
-│   ├── security-auditor.md
-│   └── documentation-writer.md
+├── agents/                       # 8 specialized agents (IDE 1.0 Markdown format)
+│   ├── architect.md              # tools: read, web
+│   ├── code-reviewer.md          # tools: read, web
+│   ├── debug-detective.md        # tools: read, shell, web
+│   ├── devops-specialist.md      # tools: read, write, shell, web
+│   ├── documentation-writer.md   # tools: read, write, web
+│   ├── performance-optimizer.md  # tools: read, shell, web
+│   ├── security-auditor.md       # tools: read, web (shell: ask)
+│   └── test-engineer.md          # tools: read, write, shell
 │
 ├── powers/                       # Kiro Powers (POWER.md + optional mcp.json + optional steering/)
 │   ├── README.md                 # Real Powers schema reference
@@ -54,7 +54,9 @@ everything-kiro/
 │
 ├── examples/
 │   ├── example-spec/             # A real, complete .kiro/specs/password-reset/ example
-│   └── fullstack-webapp/         # Example project-level Kiro config (MCP, hooks, steering)
+│   ├── fullstack-webapp/         # Example project-level Kiro config (MCP, hooks, steering)
+│   ├── AGENTS.md                 # AGENTS.md pattern: root, subdir, and infra examples
+│   └── permissions.yaml          # permissions.yaml reference — copy to .kiro/settings/ or ~/.kiro/settings/
 │
 ├── INSTALL.md
 ├── CONTRIBUTING.md
@@ -79,11 +81,26 @@ inclusion: always        # default — every conversation
 ---
 ```
 
-`manual` steering files show up as slash commands (`/filename`) — this replaced the old "manual hook trigger" concept entirely. If you're coming from a pre-1.0 setup that used manual hooks for on-demand routines, that functionality now belongs in steering, not hooks.
+`manual` steering files show up as slash commands (`/filename`). This replaced the old "manual hook trigger" concept entirely.
+
+### AGENTS.md
+
+Place an `AGENTS.md` file anywhere in your workspace to give Kiro directory-scoped instructions — conventions, restrictions, stack details. A root-level `AGENTS.md` applies workspace-wide; nested ones narrow scope to their subtree. Instructions merge from parent to child; more specific files win on conflicts. Added in **IDE 1.0.309**.
+
+```
+my-project/
+├── AGENTS.md          ← whole project
+├── src/
+│   └── AGENTS.md      ← src/ and below
+└── infra/
+    └── AGENTS.md      ← infra only
+```
+
+See [`examples/AGENTS.md`](examples/AGENTS.md) for root, API-layer, and infra examples.
 
 ### Hooks
 
-Hooks are versioned JSON files at `.kiro/hooks/*.json` (workspace) or `~/.kiro/hooks/*.json` (user, applies to every workspace):
+Hooks are versioned JSON files at `.kiro/hooks/*.json` (workspace) or `~/.kiro/hooks/*.json` (user):
 
 ```json
 {
@@ -98,51 +115,97 @@ Hooks are versioned JSON files at `.kiro/hooks/*.json` (workspace) or `~/.kiro/h
 }
 ```
 
-Triggers: `SessionStart`, `Stop`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `PreTaskExec`, `PostTaskExec`, `PostFileCreate`, `PostFileSave`, `PostFileDelete`. `PreToolUse`, `UserPromptSubmit`, and `PreTaskExec` can **block** — a command action exiting with code 2 stops the operation and returns stderr to the agent. See [`hooks/README.md`](hooks/README.md) for the full reference and every hook included here.
+Triggers: `SessionStart`, `Stop`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `PreTaskExec`, `PostTaskExec`, `PostFileCreate`, `PostFileSave`, `PostFileDelete`. `PreToolUse`, `UserPromptSubmit`, and `PreTaskExec` can **block** — a command action exiting with code 2 stops the operation. See [`hooks/README.md`](hooks/README.md) for the full reference.
 
-If you have hooks from before IDE 1.0 (the `.hook` file format with `eventType`/`hookAction`), they won't run until migrated — open the Agent Hooks panel and convert them via the upgrade badge.
+Global (user-level) hooks apply across every workspace. Added in **IDE 1.0.182**.
+
+Hooks also fire on **agent-driven file changes** (not just user saves). Added in **IDE 1.0.116**.
+
+### Permissions
+
+A capability-based system that controls what the agent can read, write, execute, and call. Replaces the old Trusted Commands / Command Denylist from 0.x. Rules live in YAML files:
+
+- `~/.kiro/settings/permissions.yaml` — user scope, all projects
+- `~/.kiro/workspace-roots/<hash>/permissions.yaml` — workspace scope, one project
+
+Workspace permissions are stored *outside* the repo (per-user) so a cloned repo cannot inject rules.
+
+```yaml
+rules:
+  - capability: shell
+    match: ["git *", "npm *"]
+    effect: allow
+  - capability: fs_write
+    match: ["**/.env", "**/*.key"]
+    effect: deny
+```
+
+Capabilities: `fs_read`, `fs_write`, `shell`, `web_fetch`, `web_search`, `mcp`, `subagent`, `skill`, `power`. Priority: `deny > ask > allow`. See [`examples/permissions.yaml`](examples/permissions.yaml) for a full annotated reference.
+
+### Custom Agents (IDE 1.0 format)
+
+Agents are Markdown files in `.kiro/agents/` (workspace) or `~/.kiro/agents/` (user). The IDE 1.0 format adds `tools` tags, inline `permissions`, `welcomeMessage`, and more in the frontmatter:
+
+```markdown
+---
+name: my-agent
+description: What this agent does
+tools: [read, write, shell, web]
+welcomeMessage: "Ready. What are we working on?"
+permissions:
+  rules:
+    - capability: shell
+      match: ["npm *", "git *"]
+      effect: allow
+---
+
+Your system prompt here...
+```
+
+Short-form `tools` tags: `read` = `fs_read`, `write` = `fs_write`, `shell`, `web` = web tools, `*` = all built-in tools. Switch agents mid-session without losing conversation history. The 8 agents in this repo each have an appropriate tools scope.
 
 ### Specs
 
 Kiro's structured feature workflow: three gated files under `.kiro/specs/{feature_name}/`.
 
-1. **requirements.md** — EARS-format acceptance criteria (`WHEN [event] THEN [system] SHALL [response]`), approved before moving on
-2. **design.md** — architecture, interfaces, data models, addressing every requirement
-3. **tasks.md** — a checkbox list of coding-only tasks, each tagged with the requirement(s) it satisfies
+1. **requirements.md** — EARS-format acceptance criteria (`WHEN [event] THEN [system] SHALL [response]`)
+2. **design.md** — architecture, interfaces, data models
+3. **tasks.md** — checkbox list of coding-only tasks
 
-Each phase requires explicit user approval before the next begins. See [`skills/development-workflows/spec-driven-development.md`](skills/development-workflows/spec-driven-development.md) for the full format and [`examples/example-spec/`](examples/example-spec/) for a complete worked example. **Quick Spec** mode generates all three in one pass for smaller features, skipping the per-phase approval gates.
+Each phase requires explicit user approval before the next begins. **Quick Spec** mode generates all three in one pass for smaller features. See [`skills/development-workflows/spec-driven-development.md`](skills/development-workflows/spec-driven-development.md) and [`examples/example-spec/`](examples/example-spec/).
 
 ### Powers
 
-Powers package documentation (and optionally an MCP server) into something Kiro activates on demand, so you don't pay the context cost of every possible tool up front:
+Powers package documentation (and optionally an MCP server) into something Kiro activates on demand:
 
-- **Knowledge Base Power** — `POWER.md` only, no MCP server (`development-power`, `devops-power` here)
-- **Guided MCP Power** — `POWER.md` + `mcp.json` (`database-power` here)
+- **Knowledge Base Power** — `POWER.md` only (`development-power`, `devops-power`)
+- **Guided MCP Power** — `POWER.md` + `mcp.json` (`database-power`)
 
-There's no `power.json` — all metadata lives in `POWER.md`'s YAML frontmatter. See [`powers/README.md`](powers/README.md) for the schema and [github.com/kirodotdev/powers](https://github.com/kirodotdev/powers) for the official, much larger catalog (AWS, Stripe, Terraform, Zapier, and more) — install those through the Powers panel rather than reimplementing them here.
+Powers can also be packaged in the open **Agent Plugin format** (bundled skills + MCP), installable from a local folder or GitHub URL. Added in **IDE 1.0.288**.
 
-### Agents
+No `power.json` — all metadata lives in `POWER.md` frontmatter. See [`powers/README.md`](powers/README.md) and the [official Powers registry](https://github.com/kirodotdev/powers).
 
-Sub-agents with a scoped persona, defined in `agents/*.md` with minimal frontmatter:
+### Agent Focus Mode
 
-```markdown
----
-name: code-reviewer
-description: Expert code reviewer specializing in security, performance, maintainability...
----
-```
+An experimental chat-first layout for directing multiple parallel agent sessions. Launch independent sessions, watch file changes as inline diffs, and use structured workflows (Spec, Plan, Bug Fix, Quick Spec) or freeform chat. Toggle from the top-right corner. Added in **IDE 1.0**; Cloud Sessions in Agent Focus added in **IDE 1.0.293**.
 
-Kiro can invoke these proactively based on context, or you can ask for one by name.
+### Cloud Sessions
+
+Run a session in the cloud alongside local ones. Start from Agent Focus Mode, pick the repositories it works against, and keep working after closing your laptop. Added in **IDE 1.0.293**.
+
+### Cloud Configuration Sync
+
+Steering files, custom agents, skills, powers, and hooks can be synced to your Kiro account and accessed across the IDE and Agent Focus. Cloud-managed items show a cloud indicator and open as read-only with an "Edit in web" action. Added in **IDE 1.0.437**.
 
 ### MCP
 
-External tool servers configured in `.kiro/settings/mcp.json` (workspace) or `~/.kiro/settings/mcp.json` (user, used as fallback if no workspace config exists). Keep enabled servers to what a project actually needs — every enabled MCP server's tools count against context budget.
+External tool servers configured in `.kiro/settings/mcp.json` (workspace) or `~/.kiro/settings/mcp.json` (user). Supports the latest MCP protocol revision including OAuth for servers that require sign-in. Keep enabled servers to what a project actually needs — every enabled MCP server's tools count against context budget.
 
 ### Kiro Crew
 
-[Kiro Crew](https://kiro.dev/blog/introducing-kiro-crew/) runs on Kiro CLI and reads existing `.kiro` configuration. After installation, this repository's steering, hooks, skills, and custom-agent patterns can therefore be used by Crew without a separate migration.
+[Kiro Crew](https://kiro.dev/blog/introducing-kiro-crew/) runs on Kiro CLI and reads existing `.kiro` configuration. This repository's steering, hooks, skills, and custom-agent patterns carry over after installation without a separate migration.
 
-This is compatibility documentation only: Everything Kiro intentionally does **not** ship a Crew manifest, schedules, Apps, integrations, or autonomous orchestration workflows. Configure those in Kiro Crew when and if your project needs them.
+This is compatibility documentation only: Everything Kiro does **not** ship a Crew manifest, schedules, Apps, integrations, or autonomous orchestration workflows.
 
 ---
 
@@ -162,7 +225,7 @@ Then edit `.kiro/settings/mcp.json` and replace the placeholder tokens with real
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). Short version: match the real schema (check kiro.dev/docs if unsure), keep claims in README/STATUS/CHANGELOG in sync with what's actually on disk, and don't add a component without also updating the file tree above.
+See [CONTRIBUTING.md](CONTRIBUTING.md). Match the real schema (check kiro.dev/docs if unsure), keep claims in README/STATUS/CHANGELOG in sync with what's actually on disk, and don't add a component without also updating the file tree above.
 
 ---
 
@@ -170,7 +233,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). Short version: match the real schema (ch
 
 - [Kiro IDE](https://kiro.dev)
 - [Kiro Docs](https://kiro.dev/docs)
-- [Kiro Changelog](https://kiro.dev/changelog/) — hooks, specs, and powers have all changed shape at least once; check here before assuming a schema is current
+- [Kiro Changelog](https://kiro.dev/changelog/) — check here before assuming a schema is current
 - [Official Powers registry](https://github.com/kirodotdev/powers)
 - [Model Context Protocol](https://modelcontextprotocol.io)
 - Inspired by [everything-claude-code](https://github.com/affaan-m/everything-claude-code)

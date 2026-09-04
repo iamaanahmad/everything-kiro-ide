@@ -1,31 +1,40 @@
 # Everything Kiro — Status
 
-## Current status: schemas verified against Kiro's actual current behavior (2026-08-05)
+## Current status: updated for Kiro IDE 1.0+ through September 2026
 
-This repo was previously written against an early/assumed version of Kiro's hooks, specs, and powers systems, and the docs claimed several files that didn't actually exist on disk. Both problems are fixed as of this update.
+Schemas verified against kiro.dev docs and the official changelog. This pass adds IDE 1.0 features: permissions, AGENTS.md, updated agent format with `tools` tags, Agent Focus Mode, Cloud Sessions, Cloud Configuration Sync, and Agent Plugin support for Powers.
 
 ## What's included
 
 | Component | Count | Notes |
 |---|---|---|
-| Agents (`agents/*.md`) | 8 | architect, code-reviewer, test-engineer, devops-specialist, debug-detective, performance-optimizer, security-auditor, documentation-writer |
+| Agents (`agents/*.md`) | 8 | IDE 1.0 Markdown format — frontmatter includes `tools`, `welcomeMessage`, and inline `permissions` where appropriate |
 | Steering (`.kiro/steering/*.md`) | 5 | 3 `always`, 1 `fileMatch` example, 1 `manual` example |
 | Hooks (`.kiro/hooks/*.json`) | 12 | v1 JSON schema, PascalCase triggers — see `hooks/README.md` |
 | Powers (`powers/*`) | 3 | development-power, devops-power (Knowledge Base), database-power (Guided MCP) |
 | Skills (`skills/**/*.md`) | 8 | development-workflows, language-patterns, infrastructure |
-| Examples (`examples/*`) | 2 | example-spec (real `.kiro/specs/` layout), fullstack-webapp (config walkthrough) |
-| Documentation | README, INSTALL, CONTRIBUTING, CHANGELOG, STATUS | all cross-checked against actual files |
+| Examples (`examples/*`) | 4 | example-spec, fullstack-webapp, AGENTS.md patterns, permissions.yaml reference |
+| Documentation | README, INSTALL, CONTRIBUTING, CHANGELOG, STATUS | cross-checked against actual files |
 
-## What changed in this pass
+## What changed in this pass (2026-09-04)
 
-- **Hooks**: the previous `hooks/file-watchers.json` used a schema (`eventType`, `hookAction`, `outputPrompt`) that predates Kiro IDE 1.0 and does not run in current Kiro. Replaced with 12 files under `.kiro/hooks/` using the real v1 schema (`trigger`, `matcher`, `action.type`).
-- **Powers**: `development-power` had a `power.json` file that doesn't exist in Kiro's actual schema (metadata belongs in `POWER.md` frontmatter), and its `POWER.md` referenced 4 steering files that didn't exist. Fixed the frontmatter and created the missing steering files. `devops-power` and `database-power` were documented in README/CHANGELOG as installed but had no directory at all — both now exist with real content.
-- **Steering**: README and the previous STATUS.md claimed 3 steering files; only 1 (`coding-standards.md`) existed. Added the missing `security-rules.md` and `project-patterns.md`, plus two new examples (`api-conventions.md` for `fileMatch`, `release-checklist.md` for `manual`).
-- **Specs**: README/STATUS/CHANGELOG all claimed a `specs/` directory with 3 templates that never existed. Kiro doesn't use standalone spec "templates" the way this repo previously implied — specs are generated per-feature under `.kiro/specs/{feature_name}/` using EARS-format requirements. Rewrote `skills/development-workflows/spec-driven-development.md` to match, and added a complete worked example under `examples/example-spec/`.
-- **Documentation accuracy**: previous CHANGELOG.md claimed INSTALL.md, CONTRIBUTING.md, and COMPARISON.md were created; they didn't exist. INSTALL.md and CONTRIBUTING.md now exist for real. COMPARISON.md was dropped — its content is folded into README.md instead of living in a separate file.
-- **Kiro Crew**: README now notes that [Kiro Crew](https://kiro.dev/blog/introducing-kiro-crew/) reads existing `.kiro` configuration, so the installed steering, hooks, skills, and custom-agent patterns are compatible. No Crew-specific manifest, schedules, Apps, integrations, or orchestration workflow is included.
+- **Agent format**: all 8 agents updated to IDE 1.0 Markdown format. Frontmatter now includes `tools` (short-form tags: `read`, `write`, `shell`, `web`) and `welcomeMessage`. `security-auditor` gets inline `permissions` to require approval on shell commands.
+- **AGENTS.md**: new `examples/AGENTS.md` showing the directory-scoped instruction pattern added in IDE 1.0.309 — root-level, API-layer, and infra examples.
+- **permissions.yaml**: new `examples/permissions.yaml` with a fully annotated reference for the capability-based permissions system that replaced Trusted Commands in IDE 1.0. Covers `deny`/`ask`/`allow` effects, glob patterns for filesystem, shell, and MCP capabilities.
+- **README**: new sections covering Permissions, AGENTS.md, updated Custom Agents (IDE 1.0 format), Agent Focus Mode, Cloud Sessions, Cloud Configuration Sync, Agent Plugin format for Powers, global hooks, and hooks firing on agent-driven file changes.
+
+## What changed in the previous pass (2026-08-05)
+
+- **Hooks**: replaced `hooks/file-watchers.json` (legacy `eventType`/`hookAction` format) with 12 files under `.kiro/hooks/` using the real v1 schema.
+- **Powers**: removed `development-power/power.json` (not a real schema file). Created missing steering files. Built out `devops-power` and `database-power`.
+- **Steering**: added missing `security-rules.md` and `project-patterns.md` plus `api-conventions.md` (fileMatch) and `release-checklist.md` (manual).
+- **Specs**: rewrote `skills/development-workflows/spec-driven-development.md` for the real EARS format; added `examples/example-spec/`.
+- **Documentation**: created `INSTALL.md` and `CONTRIBUTING.md` for real; rewrote README file tree.
+- **Kiro Crew**: README compatibility note added.
 
 ## Known gaps / not attempted
 
 - Language-specific skills beyond TypeScript/Python/React (Go, Rust, Java) — not added.
-- No CI workflow validating hook JSON syntax or dead markdown links in this repo itself — worth adding if this grows.
+- No CI workflow validating hook JSON syntax or dead markdown links — worth adding if this grows.
+- `permissions.yaml` placed at `examples/` rather than `.kiro/settings/` because Kiro's hardcoded scope blocks agent writes to `.kiro/settings/`. Copy it manually.
+- Cloud Configuration Sync and Cloud Sessions are documented but no cloud-specific config is included — those are account-level features managed in Kiro Web.

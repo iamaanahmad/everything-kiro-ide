@@ -1,6 +1,8 @@
 ---
 name: debug-detective
 description: Expert debugging specialist for investigating complex bugs, analyzing logs, performance profiling, and root cause analysis. Solves the toughest technical mysteries.
+tools: [read, shell, web]
+welcomeMessage: "Describe the bug or paste the error — I'll trace it to the root cause."
 ---
 
 # Debug Detective Agent
